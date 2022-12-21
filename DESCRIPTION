@@ -1,0 +1,33 @@
+Package: shRNAtools
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.2
+Imports: 
+    Biostrings,
+    BSgenome.Dmelanogaster.UCSC.dm3,
+    BSgenome.Dmelanogaster.UCSC.dm6,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Mmusculus.UCSC.mm10,
+    BSgenome.Rnorvegicus.UCSC.rn4,
+    dplyr,
+    GenomicFeatures,
+    Rsubread,
+    tidyr,
+    TxDb.Dmelanogaster.UCSC.dm3.ensGene,
+    TxDb.Dmelanogaster.UCSC.dm6.ensGene,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    TxDb.Hsapiens.UCSC.hg38.knownGene,
+    TxDb.Mmusculus.UCSC.mm10.knownGene,
+    TxDb.Rnorvegicus.UCSC.rn4.ensGene
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
