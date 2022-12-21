@@ -31,3 +31,5 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/ipatop/shRNAtools
+BugReports: https://github.com/ipatop/shRNAtools/issues
