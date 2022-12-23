@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>shRNA design to target circRNA and linear RNA splicing sequences</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">shRNA design to target circRNA and linear
+RNA splicing sequences</h1>
+
+
+
+<div id="instalation-and-setup" class="section level1">
+<h1>Instalation and Setup</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install library</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#devtools::install_github(&quot;ipatop/shRNAtools&quot;)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shRNAtools)</span></code></pre></div>
+</div>
+<div id="description" class="section level1">
+<h1>Description</h1>
+<p>This package contains two functions that will generate a DataFrame or
+tab separated file with the original table plus the shRNA oligo design
+appended.</p>
+<p>The input should be a tab sepparated table with circRNA or linear RNA
+splicing junction coordinates and gene names in the format:</p>
+<table>
+<table>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Chr</th>
+<th>Start</th>
+<th>End</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>mbl</td>
+<td>chr2R</td>
+<td>17275410</td>
+<td>17276063</td>
+</tr>
+</tbody>
+</table>
+</table>
+<p>This table can have an optional column with the Strand</p>
+<p>So far the following species are available:</p>
+<ul>
+<li>Fly:
+<ul>
+<li>dm3</li>
+<li>dm6</li>
+</ul></li>
+<li>Human:
+<ul>
+<li>hs19</li>
+<li>hg38</li>
+</ul></li>
+<li>Mice:
+<ul>
+<li>mm10</li>
+</ul></li>
+<li>Rat:
+<ul>
+<li>rn4</li>
+</ul></li>
+</ul>
+</div>
+<div id="run-circrna-example" class="section level1">
+<h1>Run circRNA example</h1>
+<p>Input should look like this</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Copy and paste the full path of the test data into the readtable argument</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;circs_totest.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;shRNAtools&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/private/var/folders/xy/l1p6nf850vgdlqf51b80fw1w0000gn/T/Rtmp1LCxiG/temp_libpath1b4c5b06ad7f/shRNAtools/extdata/circs_totest.txt&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">read.table</span>(<span class="at">file =</span> <span class="st">&quot;/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/circs_totest.txt&quot;</span>,<span class="at">header =</span> T)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                       dm6                       circ_name  SYMBOL   Chr</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 chr2R:17275410-17276063     mbl_chr2R:17275410-17276063     mbl chr2R</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 chr3L:24725824-24726292    scro_chr3L:24725824-24726292    scro chr3L</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3   chr2R:5423750-5424239       stw_chr2R:5423750-5424239     stw chr2R</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4   chr3R:4626973-4628349    5-HT2A_chr3R:4626973-4628349  5-HT2A chr3R</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 chr3L:12851309-12852277    Wbp2_chr3L:12851309-12852277    Wbp2 chr3L</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 chr2R:15735091-15737060 CG30089_chr2R:15735091-15737060 CG30089 chr2R</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 chr3R:14529177-14530230    Pde6_chr3R:14529177-14530230    Pde6 chr3R</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      Start      End Strand</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 17275410 17276063      +</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 24725824 24726292      +</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  5423750  5424239      +</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  4626973  4628349      +</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 12851309 12852277      +</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 15735091 15737060      +</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 14529177 14530230      -</span></span></code></pre></div>
+<p>Run to create an output table</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Copy and paste the full path of the test data into the readtable argument</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;circs_totest.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;shRNAtools&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/private/var/folders/xy/l1p6nf850vgdlqf51b80fw1w0000gn/T/Rtmp1LCxiG/temp_libpath1b4c5b06ad7f/shRNAtools/extdata/circs_totest.txt&quot;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">circRNASpliceOligoDesigner</span>(<span class="at">input_coordinates  =</span> <span class="st">&quot;../test/circs_totest.txt&quot;</span>,<span class="at">output =</span> <span class="st">&quot;../test/New_out.tsv&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: TxDb.Dmelanogaster.UCSC.dm6.ensGene</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: GenomicFeatures</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: BiocGenerics</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;BiocGenerics&#39;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:stats&#39;:</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     IQR, mad, sd, var, xtabs</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     anyDuplicated, append, as.data.frame, basename, cbind, colnames,</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     union, unique, unsplit, which.max, which.min</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: S4Vectors</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: stats4</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;S4Vectors&#39;</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following objects are masked from &#39;package:base&#39;:</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     expand.grid, I, unname</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: IRanges</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: GenomeInfoDb</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: GenomicRanges</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: AnnotationDbi</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: Biobase</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Welcome to Bioconductor</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     Vignettes contain introductory material; view with</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     &#39;browseVignettes()&#39;. To cite Bioconductor, see</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: BSgenome.Dmelanogaster.UCSC.dm6</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: BSgenome</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: Biostrings</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: XVector</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;Biostrings&#39;</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following object is masked from &#39;package:base&#39;:</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     strsplit</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: rtracklayer</span></span></code></pre></div>
+<p>Run to create a DataFrame, if writetab = F</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>circOligos<span class="ot">&lt;-</span><span class="fu">circRNASpliceOligoDesigner</span>(<span class="at">input_coordinates =</span> <span class="st">&quot;../test/circs_totest.txt&quot;</span>,<span class="at">output =</span> <span class="st">&quot;../test/New_out.tsv&quot;</span>,<span class="at">writetab =</span> F)</span></code></pre></div>
+<p>Output</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>circOligos</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                       dm6                       circ_name  SYMBOL   Chr</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 chr2R:17275410-17276063     mbl_chr2R:17275410-17276063     mbl chr2R</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 chr3L:24725824-24726292    scro_chr3L:24725824-24726292    scro chr3L</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3   chr2R:5423750-5424239        NA_chr2R:5423750-5424239    &lt;NA&gt; chr2R</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4   chr3R:4626973-4628349    5-HT2A_chr3R:4626973-4628349  5-HT2A chr3R</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 chr3L:12851309-12852277    Wbp2_chr3L:12851309-12852277    Wbp2 chr3L</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 chr2R:15735091-15737060 CG30089_chr2R:15735091-15737060 CG30089 chr2R</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 chr3R:14529177-14530230    Pde6_chr3R:14529177-14530230    Pde6 chr3R</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      Start      End                              junction_long</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 17275410 17276063 GCCTGCTACGACAGCATCAAGATAATGTAAACTCAGCTTACA</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 24725824 24726292 AAATCCACCATCTCCGTTTCGCGATAAAAGCCTACTACCAAC</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  5423750  5424239 ATACTACACAGTATTGGGAGCAAAATCAACCAGATCTTACAC</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  4626973  4628349 CTATCCAAACCTAATGGACAGGGTATTGGCCACTTGGCTTTA</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 12851309 12852277 CTCAAATAGCCATCCCGACAACACCACCTGCTCACCAACCAG</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 15735091 15737060 GCCGCTGCCCATCATGCGCAGAATTGCGATCCATTCACGCCA</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 14529177 14530230 TTTCCCTTTGATTGAAGAAACCTGCTGCACGGTGGGCGATGC</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                junction      junction_revcomp</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 CAGCATCAAGATAATGTAAAC GTTTACATTATCTTGATGCTG</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 CTCCGTTTCGCGATAAAAGCC GGCTTTTATCGCGAAACGGAG</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 TATTGGGAGCAAAATCAACCA TGGTTGATTTTGCTCCCAATA</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 TAATGGACAGGGTATTGGCCA TGGCCAATACCCTGTCCATTA</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ATCCCGACAACACCACCTGCT AGCAGGTGGTGTTGTCGGGAT</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 TCATGCGCAGAATTGCGATCC GGATCGCAATTCTGCGCATGA</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 TTGAAGAAACCTGCTGCACGG CCGTGCAGCAGGTTTCTTCAA</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                 TopStrand</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtCAGCATCAAGATAATGTAAACtagttatattcaagcataGTTTACATTATCTTGATGCTGgcg</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtCTCCGTTTCGCGATAAAAGCCtagttatattcaagcataGGCTTTTATCGCGAAACGGAGgcg</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtTATTGGGAGCAAAATCAACCAtagttatattcaagcataTGGTTGATTTTGCTCCCAATAgcg</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtTAATGGACAGGGTATTGGCCAtagttatattcaagcataTGGCCAATACCCTGTCCATTAgcg</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtATCCCGACAACACCACCTGCTtagttatattcaagcataAGCAGGTGGTGTTGTCGGGATgcg</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtTCATGCGCAGAATTGCGATCCtagttatattcaagcataGGATCGCAATTCTGCGCATGAgcg</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtTTGAAGAAACCTGCTGCACGGtagttatattcaagcataCCGTGCAGCAGGTTTCTTCAAgcg</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                 BotStrand</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcCAGCATCAAGATAATGTAAACtatgcttgaatataactaGTTTACATTATCTTGATGCTGactg</span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcCTCCGTTTCGCGATAAAAGCCtatgcttgaatataactaGGCTTTTATCGCGAAACGGAGactg</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcTATTGGGAGCAAAATCAACCAtatgcttgaatataactaTGGTTGATTTTGCTCCCAATAactg</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcTAATGGACAGGGTATTGGCCAtatgcttgaatataactaTGGCCAATACCCTGTCCATTAactg</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcATCCCGACAACACCACCTGCTtatgcttgaatataactaAGCAGGTGGTGTTGTCGGGATactg</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcTCATGCGCAGAATTGCGATCCtatgcttgaatataactaGGATCGCAATTCTGCGCATGAactg</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcTTGAAGAAACCTGCTGCACGGtatgcttgaatataactaCCGTGCAGCAGGTTTCTTCAAactg</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;              junction5p    junction_revcomp5p</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 CATCAAGATAATGTAAACTCA TGAGTTTACATTATCTTGATG</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 CGTTTCGCGATAAAAGCCTAC GTAGGCTTTTATCGCGAAACG</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 TGGGAGCAAAATCAACCAGAT ATCTGGTTGATTTTGCTCCCA</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 TGGACAGGGTATTGGCCACTT AAGTGGCCAATACCCTGTCCA</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 CCGACAACACCACCTGCTCAC GTGAGCAGGTGGTGTTGTCGG</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 TGCGCAGAATTGCGATCCATT AATGGATCGCAATTCTGCGCA</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 AAGAAACCTGCTGCACGGTGG CCACCGTGCAGCAGGTTTCTT</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               TopStrand5p</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtCATCAAGATAATGTAAACTCAtagttatattcaagcataTGAGTTTACATTATCTTGATGgcg</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtCGTTTCGCGATAAAAGCCTACtagttatattcaagcataGTAGGCTTTTATCGCGAAACGgcg</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtTGGGAGCAAAATCAACCAGATtagttatattcaagcataATCTGGTTGATTTTGCTCCCAgcg</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtTGGACAGGGTATTGGCCACTTtagttatattcaagcataAAGTGGCCAATACCCTGTCCAgcg</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtCCGACAACACCACCTGCTCACtagttatattcaagcataGTGAGCAGGTGGTGTTGTCGGgcg</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtTGCGCAGAATTGCGATCCATTtagttatattcaagcataAATGGATCGCAATTCTGCGCAgcg</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtAAGAAACCTGCTGCACGGTGGtagttatattcaagcataCCACCGTGCAGCAGGTTTCTTgcg</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               BotStrand5p</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcCATCAAGATAATGTAAACTCAtatgcttgaatataactaTGAGTTTACATTATCTTGATGactg</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcCGTTTCGCGATAAAAGCCTACtatgcttgaatataactaGTAGGCTTTTATCGCGAAACGactg</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcTGGGAGCAAAATCAACCAGATtatgcttgaatataactaATCTGGTTGATTTTGCTCCCAactg</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcTGGACAGGGTATTGGCCACTTtatgcttgaatataactaAAGTGGCCAATACCCTGTCCAactg</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcCCGACAACACCACCTGCTCACtatgcttgaatataactaGTGAGCAGGTGGTGTTGTCGGactg</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcTGCGCAGAATTGCGATCCATTtatgcttgaatataactaAATGGATCGCAATTCTGCGCAactg</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcAAGAAACCTGCTGCACGGTGGtatgcttgaatataactaCCACCGTGCAGCAGGTTTCTTactg</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;              junction3p    junction_revcomp3p</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 GACAGCATCAAGATAATGTAA TTACATTATCTTGATGCTGTC</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ATCTCCGTTTCGCGATAAAAG CTTTTATCGCGAAACGGAGAT</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 AGTATTGGGAGCAAAATCAAC GTTGATTTTGCTCCCAATACT</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 CCTAATGGACAGGGTATTGGC GCCAATACCCTGTCCATTAGG</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 CCATCCCGACAACACCACCTG CAGGTGGTGTTGTCGGGATGG</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 CATCATGCGCAGAATTGCGAT ATCGCAATTCTGCGCATGATG</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 GATTGAAGAAACCTGCTGCAC GTGCAGCAGGTTTCTTCAATC</span></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               TopStrand3p</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtGACAGCATCAAGATAATGTAAtagttatattcaagcataTTACATTATCTTGATGCTGTCgcg</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtATCTCCGTTTCGCGATAAAAGtagttatattcaagcataCTTTTATCGCGAAACGGAGATgcg</span></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtAGTATTGGGAGCAAAATCAACtagttatattcaagcataGTTGATTTTGCTCCCAATACTgcg</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtCCTAATGGACAGGGTATTGGCtagttatattcaagcataGCCAATACCCTGTCCATTAGGgcg</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtCCATCCCGACAACACCACCTGtagttatattcaagcataCAGGTGGTGTTGTCGGGATGGgcg</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtCATCATGCGCAGAATTGCGATtagttatattcaagcataATCGCAATTCTGCGCATGATGgcg</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtGATTGAAGAAACCTGCTGCACtagttatattcaagcataGTGCAGCAGGTTTCTTCAATCgcg</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               BotStrand3p</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcGACAGCATCAAGATAATGTAAtatgcttgaatataactaTTACATTATCTTGATGCTGTCactg</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcATCTCCGTTTCGCGATAAAAGtatgcttgaatataactaCTTTTATCGCGAAACGGAGATactg</span></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcAGTATTGGGAGCAAAATCAACtatgcttgaatataactaGTTGATTTTGCTCCCAATACTactg</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcCCTAATGGACAGGGTATTGGCtatgcttgaatataactaGCCAATACCCTGTCCATTAGGactg</span></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcCCATCCCGACAACACCACCTGtatgcttgaatataactaCAGGTGGTGTTGTCGGGATGGactg</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcCATCATGCGCAGAATTGCGATtatgcttgaatataactaATCGCAATTCTGCGCATGATGactg</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcGATTGAAGAAACCTGCTGCACtatgcttgaatataactaGTGCAGCAGGTTTCTTCAATCactg</span></span></code></pre></div>
+</div>
+<div id="run-linear-rna-example" class="section level1">
+<h1>Run linear RNA example</h1>
+<p>Input should look like this</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Copy and paste the full path of the test data into the readtable argument</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;lin_totest.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;shRNAtools&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/private/var/folders/xy/l1p6nf850vgdlqf51b80fw1w0000gn/T/Rtmp1LCxiG/temp_libpath1b4c5b06ad7f/shRNAtools/extdata/lin_totest.txt&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">read.table</span>(<span class="at">file =</span> <span class="st">&quot;/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/lin_totest.txt&quot;</span>,<span class="at">header =</span> T)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning in read.table(file =</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &quot;/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/lin_totest.txt&quot;, :</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; incomplete final line found by readTableHeader on</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &#39;/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/lin_totest.txt&#39;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                       dm6 SYMBOL   Chr    Start      End Strand</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 chr2R:17362078-17373067   mblC chr2R 17362078 17373067      +</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 chr2R:17371151-17373071 mblOP1 chr2R 17371151 17373071      +</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 chr2R:17373161-17373816 mblOP2 chr2R 17373161 17373816      +</span></span></code></pre></div>
+<p>Run to create an output table</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Copy and paste the full path of the test data into the readtable argument</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;lin_totest.txt&quot;</span>, <span class="at">package =</span> <span class="st">&quot;shRNAtools&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/private/var/folders/xy/l1p6nf850vgdlqf51b80fw1w0000gn/T/Rtmp1LCxiG/temp_libpath1b4c5b06ad7f/shRNAtools/extdata/lin_totest.txt&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">linRNASpliceOligoDesigner</span>(<span class="at">input_coordinates  =</span> <span class="st">&quot;../test/circs_totest.txt&quot;</span>,<span class="at">output =</span> <span class="st">&quot;../test/New_out_lin.tsv&quot;</span>)</span></code></pre></div>
+<p>Run to create a DataFrame, if writetab = F</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>linOligos<span class="ot">&lt;-</span><span class="fu">linRNASpliceOligoDesigner</span>(<span class="at">input_coordinates =</span> <span class="st">&quot;../test/circs_totest.txt&quot;</span>,<span class="at">output =</span> <span class="st">&quot;../test/New_out.tsv&quot;</span>,<span class="at">writetab =</span> F)</span></code></pre></div>
+<p>Output</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>linOligos</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                       dm6                       circ_name  SYMBOL   Chr</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 chr2R:17275410-17276063     mbl_chr2R:17275410-17276063     mbl chr2R</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 chr3L:24725824-24726292    scro_chr3L:24725824-24726292    scro chr3L</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3   chr2R:5423750-5424239        NA_chr2R:5423750-5424239    &lt;NA&gt; chr2R</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4   chr3R:4626973-4628349    5-HT2A_chr3R:4626973-4628349  5-HT2A chr3R</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 chr3L:12851309-12852277    Wbp2_chr3L:12851309-12852277    Wbp2 chr3L</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 chr2R:15735091-15737060 CG30089_chr2R:15735091-15737060 CG30089 chr2R</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 chr3R:14529177-14530230    Pde6_chr3R:14529177-14530230    Pde6 chr3R</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      Start      End                              junction_long</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 17275410 17276063 CTCTTTTACTCTCATTTCAGAGGTCAGTACTCCCATACCCTT</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 24725824 24726292 TTTTTTTTTTTGTATTTTAGCGGTAAATATAAGTAGATCGTT</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3  5423750  5424239 ATTTTTTTTATTTTATGCAGACGTAAGTATTCAAAATTCCAA</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4  4626973  4628349 CATAGATATTTGTTTTTCAGGGGTAATAGGAAAACACCTGAA</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 12851309 12852277 TCCTCTCTTTTTCGTCTTAGCAGTAAGATTTATTGTTTCAAT</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 15735091 15737060 TTTCCACCTCTCTCCCGCAGAGGTGAGTTCCCACTAGCCCAC</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 14529177 14530230 TTCTTATGTTAAGTAGTTACCCCTGAAAAAAAAGAGCGGAGA</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                junction      junction_revcomp</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 TCATTTCAGAGGTCAGTACTC GAGTACTGACCTCTGAAATGA</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 GTATTTTAGCGGTAAATATAA TTATATTTACCGCTAAAATAC</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 TTTATGCAGACGTAAGTATTC GAATACTTACGTCTGCATAAA</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 GTTTTTCAGGGGTAATAGGAA TTCCTATTACCCCTGAAAAAC</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 TCGTCTTAGCAGTAAGATTTA TAAATCTTACTGCTAAGACGA</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 CTCCCGCAGAGGTGAGTTCCC GGGAACTCACCTCTGCGGGAG</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 AGTAGTTACCCCTGAAAAAAA TTTTTTTCAGGGGTAACTACT</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                 TopStrand</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtTCATTTCAGAGGTCAGTACTCtagttatattcaagcataGAGTACTGACCTCTGAAATGAgcg</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtGTATTTTAGCGGTAAATATAAtagttatattcaagcataTTATATTTACCGCTAAAATACgcg</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtTTTATGCAGACGTAAGTATTCtagttatattcaagcataGAATACTTACGTCTGCATAAAgcg</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtGTTTTTCAGGGGTAATAGGAAtagttatattcaagcataTTCCTATTACCCCTGAAAAACgcg</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtTCGTCTTAGCAGTAAGATTTAtagttatattcaagcataTAAATCTTACTGCTAAGACGAgcg</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtCTCCCGCAGAGGTGAGTTCCCtagttatattcaagcataGGGAACTCACCTCTGCGGGAGgcg</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtAGTAGTTACCCCTGAAAAAAAtagttatattcaagcataTTTTTTTCAGGGGTAACTACTgcg</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                 BotStrand</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcTCATTTCAGAGGTCAGTACTCtatgcttgaatataactaGAGTACTGACCTCTGAAATGAactg</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcGTATTTTAGCGGTAAATATAAtatgcttgaatataactaTTATATTTACCGCTAAAATACactg</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcTTTATGCAGACGTAAGTATTCtatgcttgaatataactaGAATACTTACGTCTGCATAAAactg</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcGTTTTTCAGGGGTAATAGGAAtatgcttgaatataactaTTCCTATTACCCCTGAAAAACactg</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcTCGTCTTAGCAGTAAGATTTAtatgcttgaatataactaTAAATCTTACTGCTAAGACGAactg</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcCTCCCGCAGAGGTGAGTTCCCtatgcttgaatataactaGGGAACTCACCTCTGCGGGAGactg</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcAGTAGTTACCCCTGAAAAAAAtatgcttgaatataactaTTTTTTTCAGGGGTAACTACTactg</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;              junction5p    junction_revcomp5p</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 TTTCAGAGGTCAGTACTCCCA TGGGAGTACTGACCTCTGAAA</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 TTTTAGCGGTAAATATAAGTA TACTTATATTTACCGCTAAAA</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ATGCAGACGTAAGTATTCAAA TTTGAATACTTACGTCTGCAT</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 TTTCAGGGGTAATAGGAAAAC GTTTTCCTATTACCCCTGAAA</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 TCTTAGCAGTAAGATTTATTG CAATAAATCTTACTGCTAAGA</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 CCGCAGAGGTGAGTTCCCACT AGTGGGAACTCACCTCTGCGG</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 AGTTACCCCTGAAAAAAAAGA TCTTTTTTTTCAGGGGTAACT</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               TopStrand5p</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtTTTCAGAGGTCAGTACTCCCAtagttatattcaagcataTGGGAGTACTGACCTCTGAAAgcg</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtTTTTAGCGGTAAATATAAGTAtagttatattcaagcataTACTTATATTTACCGCTAAAAgcg</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtATGCAGACGTAAGTATTCAAAtagttatattcaagcataTTTGAATACTTACGTCTGCATgcg</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtTTTCAGGGGTAATAGGAAAACtagttatattcaagcataGTTTTCCTATTACCCCTGAAAgcg</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtTCTTAGCAGTAAGATTTATTGtagttatattcaagcataCAATAAATCTTACTGCTAAGAgcg</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtCCGCAGAGGTGAGTTCCCACTtagttatattcaagcataAGTGGGAACTCACCTCTGCGGgcg</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtAGTTACCCCTGAAAAAAAAGAtagttatattcaagcataTCTTTTTTTTCAGGGGTAACTgcg</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               BotStrand5p</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcTTTCAGAGGTCAGTACTCCCAtatgcttgaatataactaTGGGAGTACTGACCTCTGAAAactg</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcTTTTAGCGGTAAATATAAGTAtatgcttgaatataactaTACTTATATTTACCGCTAAAAactg</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcATGCAGACGTAAGTATTCAAAtatgcttgaatataactaTTTGAATACTTACGTCTGCATactg</span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcTTTCAGGGGTAATAGGAAAACtatgcttgaatataactaGTTTTCCTATTACCCCTGAAAactg</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcTCTTAGCAGTAAGATTTATTGtatgcttgaatataactaCAATAAATCTTACTGCTAAGAactg</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcCCGCAGAGGTGAGTTCCCACTtatgcttgaatataactaAGTGGGAACTCACCTCTGCGGactg</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcAGTTACCCCTGAAAAAAAAGAtatgcttgaatataactaTCTTTTTTTTCAGGGGTAACTactg</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;              junction3p    junction_revcomp3p</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 TCTCATTTCAGAGGTCAGTAC GTACTGACCTCTGAAATGAGA</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 TTGTATTTTAGCGGTAAATAT ATATTTACCGCTAAAATACAA</span></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ATTTTATGCAGACGTAAGTAT ATACTTACGTCTGCATAAAAT</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 TTGTTTTTCAGGGGTAATAGG CCTATTACCCCTGAAAAACAA</span></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 TTTCGTCTTAGCAGTAAGATT AATCTTACTGCTAAGACGAAA</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 CTCTCCCGCAGAGGTGAGTTC GAACTCACCTCTGCGGGAGAG</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 TAAGTAGTTACCCCTGAAAAA TTTTTCAGGGGTAACTACTTA</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               TopStrand3p</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 ctagcagtTCTCATTTCAGAGGTCAGTACtagttatattcaagcataGTACTGACCTCTGAAATGAGAgcg</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 ctagcagtTTGTATTTTAGCGGTAAATATtagttatattcaagcataATATTTACCGCTAAAATACAAgcg</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 ctagcagtATTTTATGCAGACGTAAGTATtagttatattcaagcataATACTTACGTCTGCATAAAATgcg</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 ctagcagtTTGTTTTTCAGGGGTAATAGGtagttatattcaagcataCCTATTACCCCTGAAAAACAAgcg</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 ctagcagtTTTCGTCTTAGCAGTAAGATTtagttatattcaagcataAATCTTACTGCTAAGACGAAAgcg</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 ctagcagtCTCTCCCGCAGAGGTGAGTTCtagttatattcaagcataGAACTCACCTCTGCGGGAGAGgcg</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 ctagcagtTAAGTAGTTACCCCTGAAAAAtagttatattcaagcataTTTTTCAGGGGTAACTACTTAgcg</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               BotStrand3p</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 aattcgcTCTCATTTCAGAGGTCAGTACtatgcttgaatataactaGTACTGACCTCTGAAATGAGAactg</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 aattcgcTTGTATTTTAGCGGTAAATATtatgcttgaatataactaATATTTACCGCTAAAATACAAactg</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 aattcgcATTTTATGCAGACGTAAGTATtatgcttgaatataactaATACTTACGTCTGCATAAAATactg</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 aattcgcTTGTTTTTCAGGGGTAATAGGtatgcttgaatataactaCCTATTACCCCTGAAAAACAAactg</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 aattcgcTTTCGTCTTAGCAGTAAGATTtatgcttgaatataactaAATCTTACTGCTAAGACGAAAactg</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 aattcgcCTCTCCCGCAGAGGTGAGTTCtatgcttgaatataactaGAACTCACCTCTGCGGGAGAGactg</span></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 7 aattcgcTAAGTAGTTACCCCTGAAAAAtatgcttgaatataactaTTTTTCAGGGGTAACTACTTAactg</span></span></code></pre></div>
+</div>
+<div id="requiered-packages" class="section level1">
+<h1>Requiered packages</h1>
+<p>The following packages are required, here an example of how to
+install it</p>
+<pre><code>install.packages(&quot;dplyr&quot;)
+install.packages(&quot;tidyr&quot;)
+BiocManager::install(&quot;Rsubread&quot;)
+BiocManager::install(&quot;GenomicFeatures&quot;)
+BiocManager::install(&quot;Biostrings&quot;)
+BiocManager::install(&quot;TxDb.Dmelanogaster.UCSC.dm6.ensGene&quot;)
+BiocManager::install(&quot;BSgenome.Dmelanogaster.UCSC.dm6&quot;)
+BiocManager::install(&quot;TxDb.Dmelanogaster.UCSC.dm3.ensGene&quot;)
+BiocManager::install(&quot;BSgenome.Dmelanogaster.UCSC.dm3&quot;)
+BiocManager::install(&quot;TxDb.Hsapiens.UCSC.hg19.knownGene&quot;)
+BiocManager::install(&quot;BSgenome.Hsapiens.UCSC.hg19&quot;)
+BiocManager::install(&quot;TxDb.Hsapiens.UCSC.hg38.knownGene&quot;)
+BiocManager::install(&quot;BSgenome.Hsapiens.UCSC.hg38&quot;)
+BiocManager::install(&quot;TxDb.Mmusculus.UCSC.mm10.knownGene&quot;)
+BiocManager::install(&quot;BSgenome.Mmusculus.UCSC.mm10&quot;)
+BiocManager::install(&quot;TxDb.Rnorvegicus.UCSC.rn4.ensGene&quot;)
+BiocManager::install(&quot;BSgenome.Rnorvegicus.UCSC.rn4&quot;)</code></pre>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
