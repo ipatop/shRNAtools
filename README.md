@@ -26,6 +26,10 @@ I wanted a tool that allows you to:
 + Design shRNAs against linear RNAs.
 + Design shRNAs shifts.
 
++ Find _reverse complementary matches_ (RCM).
++ Output a comprehensive table with the results.
++ Generate grafical outputs with the RCM matches.
+
 ### Installation
 ---
 
@@ -38,17 +42,35 @@ devtools::install_github("ipatop/shRNAtools")
 
 ### Usage
 
-This is a basic example which shows you how to use it
+This package contains two functions that will generate a Data Frame or tab separated file with the original table plus the shRNA Oligo design appended. 
 
+The input should be a tab separated table with circRNA or linear RNA splicing junction coordinates and gene names in the format: 
+
+<table>
+
+Name    | Chr   | Start    | End      | Strand
+------  | ----- | -------- | -------- | -------
+circMbl | chr2R	| 17275410 | 17276063 |    +
+
+</table>
+
+This table can have an optional column with the Strand
+
+So far the following species are available: 
+
++ Fly: 
+  + dm3
+  + dm6 
++ Human: 
+  + hs19
+  + hg38
++ Mice: 
+  + mm10 
+  + mm39
++ Rat: 
+  + rn4
+  
 # Run circRNA example
-
-Input should look like this
-```{r}
-#Copy and paste the full path of the test data into the readtable argument
-system.file("extdata", "circs_totest.txt", package = "shRNAtools")
-
-read.table(file = "/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/circs_totest.txt",header = T)
-```
 
 Run to create an output table
 ```{r}
@@ -94,4 +116,24 @@ linOligos<-linRNASpliceOligoDesigner(input_coordinates = "../test/circs_totest.t
 Output
 ```{r}
 linOligos
+```
+# Find RCMs (reverse complementary repeats) in introns flanking circRNAs
+
+Input should look like this
+```{r}
+#Copy and paste the full path of the test data into the readtable argument
+system.file("extdata", "introns.txt", package = "shRNAtools")
+
+read.table(file = "/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/introns.txt",header = T)
+```
+
+Run to create an output table
+```{r}
+RCMs <- find_rcm(sp = "mm39",intron_coordinates  = "/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/introns.txt",outBlast = "outBlast.tsv",outBlast.text = "outBlast.txt",blastn = "/Users/inespatop/Documents/Scripts/blast-2.14.0-h23b05c9_0/bin/blastn",ret = T)
+```
+
+**Output**
+Table
+```{r}
+as.data.frame(RCMs)
 ```

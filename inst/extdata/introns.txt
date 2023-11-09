@@ -1,0 +1,3 @@
+Chr	Start	End	circRNA	Strand	cond
+chr17	6172620	6187485	circTulp4	+	UP
+chr17	6189432	6227103	circTulp4	+	DOWN

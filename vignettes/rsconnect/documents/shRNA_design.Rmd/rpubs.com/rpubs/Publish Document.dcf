@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/986412/355ff1e4b21a4534854681c5ef1f7dbc
+bundleId: https://api.rpubs.com/api/v1/document/986412/355ff1e4b21a4534854681c5ef1f7dbc
+url: http://rpubs.com/inespatop/986412
+when: 1671760592.10105
+lastSyncTime: 1671760592.10108

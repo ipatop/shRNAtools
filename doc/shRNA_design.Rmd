@@ -32,15 +32,15 @@ library(shRNAtools)
 
 # Description
 
-This package contains two functions that will generate a DataFrame or tab separated file with the original table plus the shRNA oligo design appended. 
+This package contains two functions that will generate a Data Frame or tab separated file with the original table plus the shRNA Oligo design appended. 
 
-The input should be a tab sepparated table with circRNA or linear RNA splicing junction coordinates and gene names in the format: 
+The input should be a tab separated table with circRNA or linear RNA splicing junction coordinates and gene names in the format: 
 
 <table>
 
-Name  | Chr   | Start    | End
-----  | ----- | -------- | --------
-mbl	  | chr2R	| 17275410 | 17276063
+Name    | Chr   | Start    | End      | Strand
+------  | ----- | -------- | -------- | -------
+circMbl | chr2R	| 17275410 | 17276063 |    +
 
 </table>
 
@@ -56,6 +56,7 @@ So far the following species are available:
   + hg38
 + Mice: 
   + mm10 
+  + mm39
 + Rat: 
   + rn4
 
@@ -82,12 +83,12 @@ Run to create a DataFrame, if writetab = F
 circOligos<-circRNASpliceOligoDesigner(input_coordinates = "../test/circs_totest.txt",output = "../test/New_out.tsv",writetab = F)
 ```
 
-Output
+**Output**
 ```{r}
-circOligos
+as.data.frame(circOligos)
 ```
 
-# Run linear RNA example
+# Design shRNA agains linear RNA splice junction
 
 Input should look like this
 ```{r}
@@ -110,9 +111,30 @@ Run to create a DataFrame, if writetab = F
 linOligos<-linRNASpliceOligoDesigner(input_coordinates = "../test/circs_totest.txt",output = "../test/New_out.tsv",writetab = F)
 ```
 
-Output
+**Output**
 ```{r}
-linOligos
+as.data.frame(linOligos)
+```
+
+# Find RCMs (reverse complementary repeats) in introns flanking circRNAs
+
+Input should look like this
+```{r}
+#Copy and paste the full path of the test data into the readtable argument
+system.file("extdata", "introns.txt", package = "shRNAtools")
+
+read.table(file = "/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/introns.txt",header = T)
+```
+
+Run to create an output table
+```{r}
+RCMs <- find_rcm(sp = "mm39",intron_coordinates  = "/Users/inespatop/Documents/shRNA_design_circRNA/shRNAtools/inst/extdata/introns.txt",outBlast = "outBlast.tsv",outBlast.text = "outBlast.txt",blastn = "/Users/inespatop/Documents/Scripts/blast-2.14.0-h23b05c9_0/bin/blastn",ret = T)
+```
+
+**Output**
+Table
+```{r}
+as.data.frame(RCMs)
 ```
 
 # Requiered packages
@@ -137,6 +159,7 @@ BiocManager::install("TxDb.Mmusculus.UCSC.mm10.knownGene")
 BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
 BiocManager::install("TxDb.Rnorvegicus.UCSC.rn4.ensGene")
 BiocManager::install("BSgenome.Rnorvegicus.UCSC.rn4")
+BiocManager::install("TxDb.Mmusculus.UCSC.mm39.refGene")
 ```
 
 

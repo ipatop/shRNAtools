@@ -143,6 +143,7 @@ circRNASpliceOligoDesigner<-function(sp="dm6",input_coordinates="circ_totest.txt
     return(coordinates) }
 
 }
+
 #circRNASpliceOligoDesigner(input_coordinates = "./test/circs_totest.txt")
 
 #' Generate shRNAs against linear RNA splice junctions
@@ -282,7 +283,128 @@ linRNASpliceOligoDesigner<-function(sp="dm6",input_coordinates="lin_totest.txt",
     return(coordinates) }
 
 }
+
 #linRNASpliceOligoDesigner(input_coordinates = "./test/lin_totest.txt")
 
+#circRNASpliceOligoDesigner(input_coordinates = "./test/circs_totest.txt")
 
+#' find_rcm Find reverse complementary matches in flanking introns around circRNA
+#'
+#'
+#'
+#'
+#' @param sp sp character with Name of the genome to use, available are: dm6, dm3, hg19, hg38, mm39, mm10, rn4. Default is mm38
+#' @param intron_coordinates document with the coordinate of the introns flanking the circRNAs to find the RCMs. It requires a column with Chromosome, Start and End.
+#' @param ret voolean to decide if to return the table as an R object as well as a tab sepparated file
+#' @param blastn is the directory of the blastn script, default "./", in my compute for example is this "/Users/inespatop/Documents/Scripts/blast-2.14.0-h23b05c9_0/bin/blastn"
+#' @param outBlast name of the output file with tab separated statistics from blastn, default is "RCM_blast.xls"
+#' @param outBlast.text name of the output file to output the alignement grafics, default is "RCM_blast.txt"
+#
+#' @return the results of blast
+#'
+#' @export
+#'
+#' @examples
+#'
+#' #circRNAoligoDesigner(input_coordinates = "../test/circs_totest.txt", writetab=F)
+#'
+#'
+find_rcm <-function(sp="mm39",intron_coordinates="introns.txt", blastn="./",ret=F,outBlast="RCM_blast.xls",outBlast.text = "RCM_blast.txt"){
+
+  assertthat::assert_that(
+    assertthat::see_if(assertthat::is.readable(intron_coordinates))
+  )
+
+  if (sp =="dm6") {
+
+    require(BSgenome.Dmelanogaster.UCSC.dm6)
+    gen<-BSgenome.Dmelanogaster.UCSC.dm6
+
+  }  else if (sp =="dm3") {
+
+    require(BSgenome.Dmelanogaster.UCSC.dm3)
+    gen<-BSgenome.Dmelanogaster.UCSC.dm3
+
+  } else if (sp =="hg19") {
+
+    require(BSgenome.Hsapiens.UCSC.hg19)
+    gen<-BSgenome.Hsapiens.UCSC.hg19
+
+  } else if (sp =="hg38") {
+
+    require(BSgenome.Hsapiens.UCSC.hg38)
+    gen<-BSgenome.Hsapiens.UCSC.hg38
+
+  } else if (sp =="mm10") {
+
+    require(BSgenome.Mmusculus.UCSC.mm10)
+    gen<-BSgenome.Mmusculus.UCSC.mm10
+
+  } else if (sp =="mm39") {
+
+    require(BSgenome.Mmusculus.UCSC.mm39)
+    gen<-BSgenome.Mmusculus.UCSC.mm39
+
+  }
+
+  else if (sp =="rn4") {
+    require(BSgenome.Rnorvegicus.UCSC.rn4)
+    gen<-BSgenome.Rnorvegicus.UCSC.rn4
+
+  }
+
+  #read coordinates
+  coordinates<-read.delim(intron_coordinates)
+
+  #create junction long
+  coordinates$seq <- paste0(as.data.frame(Biostrings::getSeq(gen, coordinates$Chr,coordinates$Start,coordinates$End))[,1])
+  coordinates$seq_revcomp <- as.vector(Biostrings::reverseComplement(Biostrings::DNAStringSet(coordinates$seq)))
+
+  #write fasta
+  filename="leftIntron.fa"
+  fileConn<-file(filename)
+  fastaLines <- c(">Upstream Intron",coordinates$seq[coordinates$cond=="UP"])
+  writeLines(fastaLines, fileConn)
+  close(fileConn)
+
+  filename="rightIntron.fa"
+  fileConn<-file(filename)
+  fastaLines <- c("> Downstream Intron Reverse complement",coordinates$seq_revcomp[coordinates$cond=="DOWN"])
+  writeLines(fastaLines, fileConn)
+  close(fileConn)
+
+
+  #cond <- "6 qseqid sseqid btop"
+  #cond <- "6 qseqid sseqid evalue qstart qend length mismatch gapopen gaps sseq qseq sstart send"
+
+  #conditions to run blast
+  cond <- "6 qseqid sseqid evalue length mismatch gapopen gaps qseq qstart qend sseq sstart send"
+
+  #run blast
+  arguments <- paste0("-word_size 7 -strand plus -outfmt ",'"',cond,'"'," -query leftIntron.fa -subject rightIntron.fa -out ",outBlast)
+  system2(command = blastn,args = arguments)
+
+  blast.res <- read.delim(outBlast,header = F)
+  colnames(blast.res) <- c("qseqid","sseqid","evalue","length","mismatch","gapopen","gaps","qseq","qstart","qend","sseq","sstart","send")
+
+  blast.res$UpstreamIntronCoord <- paste0(coordinates$Chr[coordinates$cond=="UP"],"  ",blast.res$qstart+coordinates$Start[coordinates$cond=="UP"],"  ",blast.res$qend+coordinates$Start[coordinates$cond=="UP"])
+
+  blast.res$DownstreamIntronCoord <- paste0(coordinates$Chr[coordinates$cond=="UP"],
+                                            "  ",  coordinates$End[coordinates$cond=="DOWN"]-blast.res$send
+                                            ,"  ",  coordinates$End[coordinates$cond=="DOWN"]-blast.res$sstart
+  )
+
+  write.table(blast.res,file = outBlast,quote = F,row.names = F,sep = "\t")
+
+  #regular blast
+  arguments <- paste0("-word_size 7 -strand plus -dust no -parse_deflines -query leftIntron.fa -subject rightIntron.fa -out ",outBlast.text)
+  system2(command = blastn,args = arguments)
+
+  if(ret){
+    return(blast.res)
+  }
+
+}
+
+#
 
